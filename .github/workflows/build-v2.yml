@@ -1,0 +1,42 @@
+name: Build Working iOS IPA
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check Files
+      run: |
+        echo "=== Files in repo ==="
+        ls -la
+        echo "=== HTML file size ==="
+        wc -c index.html
+    
+    - name: Build IPA
+      run: |
+        mkdir -p Payload/EABVFXBoost.app
+        cp index.html Payload/EABVFXBoost.app/
+        cat > Payload/EABVFXBoost.app/Info.plist << 'PLIST'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0"><dict>
+        <key>CFBundleName</key><string>EABVFX Boost</string>
+        <key>CFBundleIdentifier</key><string>com.eabvfx.boost</string>
+        <key>CFBundleVersion</key><string>1</string>
+        <key>CFBundleShortVersionString</key><string>1.0</string>
+        <key>CFBundleExecutable</key><string>EABVFXBoost</string>
+        <key>NSAppTransportSecurity</key>
+        <dict><key>NSAllowsArbitraryLoads</key><true/></dict>
+        </dict></plist>
+        PLIST
+        echo "=== Files in IPA ==="
+        ls -la Payload/EABVFXBoost.app/
+        zip -r EABVFXBoost.ipa Payload
+        echo "=== Final IPA size ==="
+        ls -la EABVFXBoost.ipa
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: EABVFXBoost.ipa
+        path: "*.ipa"
