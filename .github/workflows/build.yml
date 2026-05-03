@@ -1,41 +1,69 @@
-name: Build iOS IPA
+name: Build Real iOS IPA
 on: workflow_dispatch
 jobs:
   build:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest-stable
-    - name: Create App Structure
+    
+    - name: Create Complete IPA Structure
       run: |
-        mkdir -p EABVFXBoost
-        cp index.html EABVFXBoost/
-        cp ContentView.swift EABVFXBoost/
-        cp App.swift EABVFXBoost/
-        cat > EABVFXBoost/Info.plist << 'PLIST'
+        # Create the standard IPA folder structure
+        mkdir -p Payload/EABVFXBoost.app
+        
+        # 1. Copy the HTML file into the app
+        cp index.html Payload/EABVFXBoost.app/
+        
+        # 2. Create the required Info.plist
+        cat > Payload/EABVFXBoost.app/Info.plist << 'PLIST'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0"><dict>
-        <key>CFBundleName</key><string>EABVFX Boost</string>
-        <key>CFBundleIdentifier</key><string>com.eabvfx.boost</string>
-        <key>CFBundleVersion</key><string>1</string>
-        <key>CFBundleShortVersionString</key><string>1.0</string>
-        <key>NSAppTransportSecurity</key>
-        <dict><key>NSAllowsArbitraryLoads</key><true/></dict>
-        </dict></plist>
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleDevelopmentRegion</key>
+            <string>en</string>
+            <key>CFBundleExecutable</key>
+            <string>EABVFXBoost</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.eabvfx.boost</string>
+            <key>CFBundleInfoDictionaryVersion</key>
+            <string>6.0</string>
+            <key>CFBundleName</key>
+            <string>EABVFX Boost</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>CFBundleVersion</key>
+            <string>1</string>
+            <key>LSRequiresIPhoneOS</key>
+            <true/>
+            <key>UIStatusBarStyle</key>
+            <string>UIStatusBarStyleDefault</string>
+            <key>UISupportedInterfaceOrientations</key>
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+            </array>
+            <key>NSAppTransportSecurity</key>
+            <dict>
+                <key>NSAllowsArbitraryLoads</key>
+                <true/>
+            </dict>
+        </dict>
+        </plist>
         PLIST
-    - name: Build IPA
-      run: |
-        mkdir Payload
-        mkdir EABVFXBoost.app
-        cp EABVFXBoost/index.html EABVFXBoost.app/
-        cp EABVFXBoost/Info.plist EABVFXBoost.app/
-        cp -r EABVFXBoost.app Payload/
+
+        # 3. Verify the HTML file is inside
+        echo "Verifying app contents:"
+        ls -la Payload/EABVFXBoost.app/
+        echo "HTML file size:"
+        wc -c Payload/EABVFXBoost.app/index.html
+
+        # 4. Create the IPA
         zip -r EABVFXBoost.ipa Payload
-        ls -la *.ipa
+        echo "Final IPA size:"
+        ls -la EABVFXBoost.ipa
+
     - uses: actions/upload-artifact@v4
       with:
         name: EABVFXBoost.ipa
